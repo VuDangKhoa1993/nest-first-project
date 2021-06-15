@@ -1,7 +1,14 @@
+import { ValidationPipe } from './../shared/pipes/validation.pipe';
 import { Body, Controller, Delete, Get, Header, HttpCode, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Query, Redirect, Req } from '@nestjs/common';
 import { CreateCatDto, UpdateCatDto, ListAllEntities } from 'src/cats/dtos';
 import { ForbiddenException } from 'src/shared/exceptions/forbidden.exception';
+import { UsePipes } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
+import { RoleGuard } from 'src/shared/guards/role.guard';
+import { SetMetadata } from '@nestjs/common';
+import { Roles } from 'src/shared/custom-decorators/roles.decorator';
 @Controller('cats')
+@UseGuards(RoleGuard)
 export class CatsController {
 
     @Get()
@@ -21,13 +28,18 @@ export class CatsController {
     @Get(':id')
     findOne(
         @Param('id',
-        new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: string
+            new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE })) id: string
     ): string {
         return `This action returns a #${id} cat`;
     }
 
     @Post()
-    create(@Body() createCatDto: CreateCatDto) {
+    // @UsePipes(new ValidationPipe()) // using method-based pipe
+    @Roles('admin')
+    async create(
+        @Body(new ValidationPipe()) // using parameter-based pipe 
+        createCatDto: CreateCatDto
+    ) {
         return 'This action adds a new cat';
     }
 

@@ -1,9 +1,27 @@
+import { ValidationPipe } from './shared/pipes/validation.pipe';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { CatsController } from './cats/cats.controller';
 import { CatsModule } from './cats/cats.module';
 import { logger, LoggerMiddleware } from './middlewares/logger.middleware';
+import { RoleGuard } from './shared/guards/role.guard';
+import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 @Module({
   imports: [CatsModule],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor
+    }
+  ]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
